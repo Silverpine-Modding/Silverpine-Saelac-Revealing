@@ -1,6 +1,6 @@
 # Revealing
 
-A BepInEx addon for Silverpine 1.7.3 and Custom Item Loader 2.2.1. It lets a
+A BepInEx addon for Silverpine 1.7.3 and Custom Item Loader 3.0.7. It lets a
 custom clothing or accessory item define its actual chest/waist coverage and
 give the LLM a precise author-written description instead of Silverpine's
 generic topless, pantless, or naked text.
@@ -8,7 +8,7 @@ generic topless, pantless, or naked text.
 ## Requirements
 
 - BepInEx for Silverpine 1.7.3
-- Custom Item Loader 2.2.1 or later
+- Custom Item Loader 3.0.7 or later (tabbed Custom Item Editor)
 - Additional Equipment Slots is optional. When installed, Under-top and
   Under-waist are included in the same coverage calculation.
 
@@ -27,8 +27,9 @@ BepInEx/plugins/Revealing/
 
 ## Editor
 
-Open `Modding Tools` -> `Custom Item Editor` and select an item. A `Revealing`
-foldout appears before `Appearance`. It initially contains one checkbox:
+Open `Modding Tools` -> `Custom Item Editor`, select an item, and open the
+`Appearance` tab. The `Revealing` foldout appears above the visual settings.
+It initially contains one checkbox:
 
 - `Revealing`
 
@@ -37,6 +38,13 @@ Checking it displays `Fully covers chest` and `Fully covers waist`. When
 neither coverage box is checked, it also displays `Revealing Description`.
 Unchecking `Revealing` removes the override. Save the pack and restart
 Silverpine, as with other Custom Item Loader changes.
+
+Version 1.1.0 integrates with the loader's new tabbed form and wrapped text
+fields. Existing `revealing` blocks are loaded without migration. Changes use
+the loader's own addon-data storage, so Save Pack, Duplicate, switching items
+or packs, and the unsaved-changes warning all include Revealing settings.
+Unchecking Revealing removes its JSON block when the pack is saved. Other
+addon fields are preserved. Restart Silverpine after installing this update.
 
 The settings are stored directly on the item in its pack JSON:
 
@@ -82,6 +90,12 @@ them. The editor always writes both values.
   from assigning the clothing to another visible character while keeping the
   equipment slot, item identity, and authored observation unambiguous.
 
+- When a described item pertains to chest or waist coverage, its authored text
+  replaces the generic exposure sentence for that area. Unrelated native
+  exposure text is retained.
+- The same coverage result drives `Player.IsNude()`, so the nude sprite follows
+  the configured chest and waist toggles.
+
 ### Player variables in Revealing Description
 
 Revealing descriptions accept Silverpine-style player variables. They are
@@ -115,14 +129,24 @@ For a female player named Mira, it receives:
 ```text
 A hole in the sock shows her heel as she walks beside Mira's companion.
 ```
-- When a described item pertains to chest or waist coverage, its authored text
-  replaces the generic exposure sentence for that area. Unrelated native
-  exposure text is retained.
-- The same coverage result drives `Player.IsNude()`, so the nude sprite follows
-  the configured chest and waist toggles.
 
 The description is prompt text, not dialogue. Write a short visual statement
 that says what is covered or visible; do not add instructions to the model.
+
+## Development checks
+
+From the Silverpine game directory:
+
+```powershell
+dotnet build 'Plugin Development/Revealing/Revealing.csproj' -c Release
+dotnet run --project 'Plugin Development/Revealing/Tests/RegressionChecks.csproj' -c Release -- .
+```
+
+The regression checks use the installed loader's real item/document types
+and inspect its UI bindings. They cover existing JSON, save/reload,
+duplication, removal, unknown addon data, malformed settings, and dirty-state
+tracking without modifying any packs. Check the Appearance tab in-game after
+installing a build to verify rendering and checkbox/text-field interaction.
 
 ## Credits
 
